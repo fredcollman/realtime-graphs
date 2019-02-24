@@ -6,21 +6,16 @@ const INNER = {
 };
 const BARS = ["min", "max", "avg", "cur"]
 
-let state = {
-  total: 0,
-  count: 0,
-  min: 1,
-  max: 0,
-  latest: 0,
-};
+let state = [];
+// let state = {
+//   total: 0,
+//   count: 0,
+//   min: 1,
+//   max: 0,
+//   latest: 0,
+// };
 
-const reducer = (state, data) => ({
-  total: state.total + data,
-  count: state.count + 1,
-  min: Math.min(state.min, data),
-  max: Math.max(state.max, data),
-  latest: data,
-});
+const reducer = (state, data) => [...state, data];
 
 const data = [
   {value: 0.7},
@@ -56,10 +51,17 @@ const addChart = () => {
     .attr('transform', `translate(0, ${INNER.height})`)
     .call(d3.axisBottom(xScale).ticks(2))
   axisContainer.append('g').call(d3.axisLeft(yScale))
+
+  axisContainer.append('path')
+    .datum([])
+    .attr('class', 'line')
+    .attr('d', line);
   return axisContainer;
 }
 
-const render = (chart) => {
+const render = (data, chart) => {
+  xScale.domain([0, data.length])
+
   const line = d3.line()
     .x((d, i) => xScale(i))
     .y(d => yScale(d.value));
@@ -70,19 +72,22 @@ const render = (chart) => {
     .attr('d', line);
 }
 
-// const handle = event => {
-//   state = reducer(state, parseFloat(event.data));
-//   // console.log(state);
-//   render(state);
-// }
+const parseEvent = event => ({
+  value: parseFloat(event.data)
+})
+
+const getHandler = chart => event => {
+  state = reducer(state, parseEvent(event))
+  // console.log(state);
+  render(state, chart);
+}
 
 const init = () => {
   const app = document.querySelector('#app')
-  // const ws = new WebSocket("ws://127.0.0.1:8765/");
-  // ws.onmessage = handle;
+  const ws = new WebSocket("ws://127.0.0.1:8765/");
   const chart = addChart();
-  render(chart);
-  // addStopButton({ws, app});
+  ws.onmessage = getHandler(chart);
+  addStopButton({ws, app});
 }
 
 init();
