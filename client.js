@@ -31,7 +31,6 @@ const addStopButton = ({ws}) => {
 }
 
 const xScale = d3.scaleLinear()
-  .domain([0, data.length - 1])
   .range([0, INNER.width])
 
 const yScale = d3.scaleLinear()
@@ -47,29 +46,33 @@ const addChart = () => {
   const axisContainer = svg.append('g')
     .attr('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 
-  axisContainer.append('g')
-    .attr('transform', `translate(0, ${INNER.height})`)
-    .call(d3.axisBottom(xScale).ticks(2))
-  axisContainer.append('g').call(d3.axisLeft(yScale))
-
   axisContainer.append('path')
     .datum([])
     .attr('class', 'line')
     .attr('d', line);
+  axisContainer.append('g')
+    .attr('class', 'x-axis')
+    .attr('transform', `translate(0, ${INNER.height})`)
+    .call(d3.axisBottom(xScale))
+  axisContainer.append('g')
+    .attr('class', 'y-axis')
+    .call(d3.axisLeft(yScale))
+
   return axisContainer;
 }
 
+const line = d3.line()
+  .x((d, i) => xScale(i))
+  .y(d => yScale(d.value));
+
 const render = (data, chart) => {
-  xScale.domain([0, data.length])
+  xScale.domain([0, data.length]);
 
-  const line = d3.line()
-    .x((d, i) => xScale(i))
-    .y(d => yScale(d.value));
-
-  chart.append('path')
+  chart.select('path')
     .datum(data)
     .attr('class', 'line')
     .attr('d', line);
+  chart.select('.x-axis').call(d3.axisBottom(xScale));
 }
 
 const parseEvent = event => ({
