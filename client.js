@@ -4,7 +4,6 @@ const INNER = {
   width: OUTER.width - MARGIN.left - MARGIN.right,
   height: OUTER.height - MARGIN.top - MARGIN.bottom,
 };
-const BARS = ["min", "max", "avg", "cur"]
 
 let state = [];
 let emptyState = {
@@ -51,10 +50,7 @@ const addChart = () => {
   const axisContainer = svg.append('g')
     .attr('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 
-  axisContainer.append('path')
-    .datum([])
-    .attr('class', 'line')
-    .attr('d', line);
+  const chartContainer = axisContainer.append('g');
   axisContainer.append('g')
     .attr('class', 'x-axis')
     .attr('transform', `translate(0, ${INNER.height})`)
@@ -63,21 +59,27 @@ const addChart = () => {
     .attr('class', 'y-axis')
     .call(d3.axisLeft(yScale))
 
-  return axisContainer;
+  return chartContainer;
 }
 
 const line = d3.line()
   .x((d, i) => xScale(i))
-  .y(d => yScale(d.latest));
-  // .y(d => yScale(d.max));
+  .y(d => yScale(d));
 
 const render = (state, chart) => {
   xScale.domain([0, state.length]);
 
-  chart.select('path')
-    .datum(state)
+  const data = [
+    { name: 'min', values: state.map(i => i.min) },
+    { name: 'max', values: state.map(i => i.max) },
+    { name: 'avg', values: state.map(i => i.total / i.count) },
+  ];
+
+  const lines = chart.selectAll('path')
+    .data(data)
+    .join('path')
     .attr('class', 'line')
-    .attr('d', line);
+    .attr('d', d => line(d.values));
   chart.select('.x-axis').call(d3.axisBottom(xScale));
 }
 
