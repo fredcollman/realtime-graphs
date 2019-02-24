@@ -14,12 +14,21 @@ const reducer = (state, data) => ({
   max: Math.max(state.max, data),
   latest: data,
 })
+
 ws.onmessage = (event) => {
   state = reducer(state, parseFloat(event.data));
-  d3.select('#app')
+  // console.log(state);
+
+  const bars = d3.select('#app')
     .selectAll('div')
     .data([state.min, state.max, state.total/state.count, state.latest])
+
+  const newBars = bars.enter()
+    .append('div')
     .attr('class', 'bar')
+    .style('width', 0)
+
+  newBars.merge(bars)
+    .transition()
     .style('width', d => `${d * 100}%`)
-  console.log(state)
 };
