@@ -7,21 +7,26 @@ const INNER = {
 const BARS = ["min", "max", "avg", "cur"]
 
 let state = [];
-// let state = {
-//   total: 0,
-//   count: 0,
-//   min: 1,
-//   max: 0,
-//   latest: 0,
-// };
+let emptyState = {
+  total: 0,
+  count: 0,
+  min: 1,
+  max: 0,
+  latest: 0,
+};
 
-const reducer = (state, data) => [...state, data];
+const baseReducer = (state, data) => ({
+  total: state.total + data,
+  count: state.count + 1,
+  min: Math.min(state.min, data),
+  max: Math.max(state.max, data),
+  latest: data,
+});
 
-const data = [
-  {value: 0.7},
-  {value: 0.3},
-  {value: 0.4},
-]
+const reducer = (state, data) => {
+  const previous = state.length ? state[state.length - 1] : emptyState;
+  return [...state, baseReducer(previous, data.value)];
+};
 
 const addStopButton = ({ws}) => {
   const button = document.createElement("button");
@@ -63,13 +68,14 @@ const addChart = () => {
 
 const line = d3.line()
   .x((d, i) => xScale(i))
-  .y(d => yScale(d.value));
+  .y(d => yScale(d.latest));
+  // .y(d => yScale(d.max));
 
-const render = (data, chart) => {
-  xScale.domain([0, data.length]);
+const render = (state, chart) => {
+  xScale.domain([0, state.length]);
 
   chart.select('path')
-    .datum(data)
+    .datum(state)
     .attr('class', 'line')
     .attr('d', line);
   chart.select('.x-axis').call(d3.axisBottom(xScale));
