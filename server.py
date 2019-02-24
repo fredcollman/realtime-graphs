@@ -7,7 +7,7 @@ import websockets
 
 async def hello(websocket, path):
     while True:
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(0.1)
         await websocket.send(f"{random.random()}")
 
 

@@ -1,0 +1,12 @@
+body {
+    margin: 0
+}
+#app {
+    width: 100vw;
+}
+
+.bar {
+    background-color: orange;
+    height: 20px;
+    margin-top: 2px;
+}
