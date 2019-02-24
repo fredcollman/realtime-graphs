@@ -35,32 +35,39 @@ const addStopButton = ({ws}) => {
   document.body.appendChild(button);
 }
 
-const addChart = () => {
-  const svg = d3.select('#app')
-    .append('svg')
-    .attr('width', OUTER.width)
-    .attr('height', OUTER.height)
-    .append('g')
-
-  const axisContainer = svg.append('g')
-    .attr('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
-
-  axisContainer.append('g')
-    .attr('transform', `translate(0, ${INNER.height})`)
-    .call(d3.axisBottom(xScale))
-  axisContainer.append('g').call(d3.axisLeft(yScale))
-}
-
 const xScale = d3.scaleLinear()
   .domain([0, data.length - 1])
   .range([0, INNER.width])
 
 const yScale = d3.scaleLinear()
   .domain([0, 1])
-  .range([0, INNER.height])
+  .range([INNER.height, 0])
 
-const render = () => {
+const addChart = () => {
+  const svg = d3.select('#app')
+    .append('svg')
+    .attr('width', OUTER.width)
+    .attr('height', OUTER.height);
 
+  const axisContainer = svg.append('g')
+    .attr('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
+
+  axisContainer.append('g')
+    .attr('transform', `translate(0, ${INNER.height})`)
+    .call(d3.axisBottom(xScale).ticks(2))
+  axisContainer.append('g').call(d3.axisLeft(yScale))
+  return axisContainer;
+}
+
+const render = (chart) => {
+  const line = d3.line()
+    .x((d, i) => xScale(i))
+    .y(d => yScale(d.value));
+
+  chart.append('path')
+    .datum(data)
+    .attr('class', 'line')
+    .attr('d', line);
 }
 
 // const handle = event => {
@@ -73,8 +80,8 @@ const init = () => {
   const app = document.querySelector('#app')
   // const ws = new WebSocket("ws://127.0.0.1:8765/");
   // ws.onmessage = handle;
-  addChart()
-  render()
+  const chart = addChart();
+  render(chart);
   // addStopButton({ws, app});
 }
 
