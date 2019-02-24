@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WebSocket demo</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      const ws = new WebSocket("ws://127.0.0.1:8765/");
+      let state = {total: 0, count: 0}
+
+      const reducer = (state, data) => ({
+          total: state.total + data,
+          count: state.count + 1,
+      })
+      ws.onmessage = (event) => {
+        const container = document.getElementById('app');
+        state = reducer(state, parseFloat(event.data));
+        container.innerHTML = `${state.total/state.count}`
+      };
+    </script>
+  </body>
+</html>
