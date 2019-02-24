@@ -1,12 +1,7 @@
-body {
-    margin: 0
-}
-#app {
-    width: 100vw;
+.bar {
+    fill: orange;
 }
 
-.bar {
-    background-color: orange;
-    height: 20px;
-    margin-top: 2px;
+.bar:hover, .bar:active {
+    fill: blue;
 }
