@@ -30,8 +30,8 @@ const yScale = d3.scaleBand()
   .domain(BARS)
   .range([0, INNER.height])
 
-const render = state => {
-  const bars = d3.select('svg')
+const render = (state, chart) => {
+  const bars = chart
     .selectAll('g rect')
     .data([state.min, state.max, state.total/state.count, state.latest]);
 
@@ -45,13 +45,14 @@ const render = state => {
 
   newBars.merge(bars)
     .transition()
+    .attr('value', d => d)
     .attr('width', d => xScale(d));
 }
 
-const handle = event => {
+const getHandler = ({chart}) => event => {
   state = reducer(state, parseFloat(event.data));
   // console.log(state);
-  render(state);
+  render(state, chart);
 }
 
 const addStopButton = ({ws}) => {
@@ -70,17 +71,18 @@ const addChart = () => {
   const axisContainer = svg.append('g')
     .attr('transform', `translate(${MARGIN.left}, ${MARGIN.top})`);
 
-  svg.append('g')
+  axisContainer.append('g')
     .attr('transform', `translate(0, ${INNER.height})`)
-    .call(d3.axisBottom(xScale))
-  svg.append('g').call(d3.axisLeft(yScale))
+    .call(d3.axisBottom(xScale));
+  axisContainer.append('g').call(d3.axisLeft(yScale));
+  return axisContainer;
 }
 
 const init = () => {
   const app = document.querySelector('#app')
   const ws = new WebSocket("ws://127.0.0.1:8765/");
-  ws.onmessage = handle;
-  addChart()
+  const chart = addChart();
+  ws.onmessage = getHandler({chart});
   addStopButton({ws, app});
 }
 
